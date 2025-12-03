@@ -8,80 +8,80 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as CollectionRouteImport } from "./routes/collection";
-import { Route as GenerateRouteImport } from "./routes/generate";
-import { Route as IndexRouteImport } from "./routes/index";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as GenerateRouteImport } from './routes/generate'
+import { Route as CollectionRouteImport } from './routes/collection'
+import { Route as IndexRouteImport } from './routes/index'
 
 const GenerateRoute = GenerateRouteImport.update({
-  id: "/generate",
-  path: "/generate",
+  id: '/generate',
+  path: '/generate',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const CollectionRoute = CollectionRouteImport.update({
-  id: "/collection",
-  path: "/collection",
+  id: '/collection',
+  path: '/collection',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/collection": typeof CollectionRoute;
-  "/generate": typeof GenerateRoute;
+  '/': typeof IndexRoute
+  '/collection': typeof CollectionRoute
+  '/generate': typeof GenerateRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/collection": typeof CollectionRoute;
-  "/generate": typeof GenerateRoute;
+  '/': typeof IndexRoute
+  '/collection': typeof CollectionRoute
+  '/generate': typeof GenerateRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/collection": typeof CollectionRoute;
-  "/generate": typeof GenerateRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/collection': typeof CollectionRoute
+  '/generate': typeof GenerateRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/" | "/collection" | "/generate";
-  fileRoutesByTo: FileRoutesByTo;
-  to: "/" | "/collection" | "/generate";
-  id: "__root__" | "/" | "/collection" | "/generate";
-  fileRoutesById: FileRoutesById;
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/collection' | '/generate'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/collection' | '/generate'
+  id: '__root__' | '/' | '/collection' | '/generate'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  CollectionRoute: typeof CollectionRoute;
-  GenerateRoute: typeof GenerateRoute;
+  IndexRoute: typeof IndexRoute
+  CollectionRoute: typeof CollectionRoute
+  GenerateRoute: typeof GenerateRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/generate": {
-      id: "/generate";
-      path: "/generate";
-      fullPath: "/generate";
-      preLoaderRoute: typeof GenerateRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/collection": {
-      id: "/collection";
-      path: "/collection";
-      fullPath: "/collection";
-      preLoaderRoute: typeof CollectionRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+    '/generate': {
+      id: '/generate'
+      path: '/generate'
+      fullPath: '/generate'
+      preLoaderRoute: typeof GenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collection': {
+      id: '/collection'
+      path: '/collection'
+      fullPath: '/collection'
+      preLoaderRoute: typeof CollectionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,17 +89,16 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CollectionRoute: CollectionRoute,
   GenerateRoute: GenerateRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type { createStart } from "@tanstack/react-start";
-import type { getRouter } from "./router.tsx";
-
-declare module "@tanstack/react-start" {
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof getRouter>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
   }
 }

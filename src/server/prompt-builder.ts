@@ -3,8 +3,7 @@ export type CardParams = {
   description?: string;
 };
 
-export const buildPrompt = (params: CardParams) => {
-  return `
+export const buildPrompt = (params: CardParams) => `
 あなたはトレーディングカードゲームのデザイナーです。
 提供された画像と、ユーザーからの入力情報をもとに、ユニークで面白いトレーディングカードのデータを生成してください。
 
@@ -45,4 +44,3 @@ export const buildPrompt = (params: CardParams) => {
   "flavorText": "フレーバーテキスト"
 }
 `;
-};

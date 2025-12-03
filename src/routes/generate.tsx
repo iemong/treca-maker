@@ -33,7 +33,7 @@ function GeneratePage() {
   };
 
   const handleGenerate = async () => {
-    if (!file || !title) return;
+    if (!(file && title)) return;
     setLoading(true);
     setCardData(null);
     try {
@@ -50,7 +50,7 @@ function GeneratePage() {
   };
 
   const handleSave = async () => {
-    if (!cardData || !canvasRef.current) return;
+    if (!(cardData && canvasRef.current)) return;
     const imageBase64 = canvasRef.current.toDataURL("image/png");
 
     try {
@@ -75,28 +75,28 @@ function GeneratePage() {
   };
 
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-8 text-center">カード生成</h1>
+    <div className="container mx-auto max-w-4xl p-4">
+      <h1 className="mb-8 text-center font-bold text-3xl">カード生成</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         {/* Input Form */}
         <div className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="image">画像</Label>
             <Input
-              id="image"
-              type="file"
               accept="image/*"
+              id="image"
               onChange={handleFileChange}
+              type="file"
             />
           </div>
 
           {preview && (
             <div className="relative aspect-video w-full overflow-hidden rounded-md border border-input">
               <img
-                src={preview}
                 alt="Preview"
-                className="object-cover w-full h-full"
+                className="h-full w-full object-cover"
+                src={preview}
               />
             </div>
           )}
@@ -105,9 +105,9 @@ function GeneratePage() {
             <Label htmlFor="title">タイトル</Label>
             <Input
               id="title"
+              onChange={(e) => setTitle(e.target.value)}
               placeholder="カードのタイトル"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
             />
           </div>
 
@@ -115,16 +115,16 @@ function GeneratePage() {
             <Label htmlFor="description">画像の説明（任意）</Label>
             <Textarea
               id="description"
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="どんな状況？（例：ラーメンを食べている、猫が寝ている）"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
             />
           </div>
 
           <Button
-            onClick={handleGenerate}
-            disabled={!file || !title || loading}
             className="w-full"
+            disabled={!(file && title) || loading}
+            onClick={handleGenerate}
             size="lg"
           >
             {loading ? (
@@ -143,24 +143,24 @@ function GeneratePage() {
           {cardData ? (
             <>
               <CardView
-                ref={canvasRef}
                 card={cardData}
+                className="rounded-lg shadow-2xl"
                 imageBase64={preview}
-                className="shadow-2xl rounded-lg"
+                ref={canvasRef}
               />
-              <div className="flex space-x-4 w-full">
+              <div className="flex w-full space-x-4">
                 <Button
+                  className="flex-1"
                   onClick={handleSave}
                   variant="secondary"
-                  className="flex-1"
                 >
                   <Save className="mr-2 h-4 w-4" />
                   保存
                 </Button>
                 <Button
+                  className="flex-1"
                   onClick={handleDownload}
                   variant="outline"
-                  className="flex-1"
                 >
                   <Download className="mr-2 h-4 w-4" />
                   ダウンロード
@@ -168,7 +168,7 @@ function GeneratePage() {
               </div>
             </>
           ) : (
-            <div className="flex items-center justify-center w-full h-[580px] border-2 border-dashed rounded-lg text-muted-foreground">
+            <div className="flex h-[580px] w-full items-center justify-center rounded-lg border-2 border-dashed text-muted-foreground">
               ここにカードが生成されます
             </div>
           )}

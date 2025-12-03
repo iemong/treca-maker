@@ -1,6 +1,6 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.8/schema.json",
-  "extends": ["ultracite/react"],
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["ultracite/core", "ultracite/react"],
   "files": {
     "includes": [
       "**",
@@ -9,7 +9,8 @@
       "!**/.vinxi",
       "!**/.output",
       "!**/build",
-      "!**/src/styles.css"
+      "!**/src/styles.css",
+      "!**/src/components/ui"
     ]
   },
   "linter": {
@@ -20,15 +21,5 @@
         "noReactForwardRef": "off"
       }
     }
-  },
-  "css": {
-    "parser": {
-      "cssModules": true
-    }
-  },
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "space",
-    "indentWidth": 2
   }
 }

@@ -15,49 +15,49 @@ function CollectionPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">コレクション</h1>
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="font-bold text-3xl">コレクション</h1>
         <Button asChild variant="outline">
           <Link to="/">トップへ戻る</Link>
         </Button>
       </div>
 
       {cards.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
+        <div className="py-20 text-center text-muted-foreground">
           まだカードがありません。
           <br />
           <Link
+            className="mt-4 inline-block text-primary hover:underline"
             to="/generate"
-            className="text-primary hover:underline mt-4 inline-block"
           >
             カードを作成する
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {cards.map((card) => (
-            <div key={card.id} className="flex flex-col space-y-2 group">
+            <div className="group flex flex-col space-y-2" key={card.id}>
               <div className="relative overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105">
                 <img
-                  src={card.imageBase64}
                   alt={card.name}
-                  className="w-full h-auto"
+                  className="h-auto w-full"
+                  src={card.imageBase64}
                 />
               </div>
 
-              <div className="flex justify-between items-center px-2">
-                <span className="font-bold truncate flex-1 mr-2">
+              <div className="flex items-center justify-between px-2">
+                <span className="mr-2 flex-1 truncate font-bold">
                   {card.name}
                 </span>
                 <Button
-                  variant="ghost"
-                  size="icon"
+                  className="text-muted-foreground hover:text-destructive"
                   onClick={() => {
                     if (confirm("本当に削除しますか？")) {
                       card.id && db.cards.delete(card.id);
                     }
                   }}
-                  className="text-muted-foreground hover:text-destructive"
+                  size="icon"
+                  variant="ghost"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>

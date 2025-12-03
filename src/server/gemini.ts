@@ -60,7 +60,7 @@ export const generateCard = createServerFn({ method: "POST" })
             response_mime_type: "application/json",
           },
         }),
-      },
+      }
     );
 
     if (!response.ok) {

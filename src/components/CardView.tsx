@@ -32,13 +32,13 @@ export const CardView = forwardRef<HTMLCanvasElement, CardViewProps>(
 
     return (
       <canvas
+        className={className}
+        height={height}
         ref={canvasRef}
         width={width}
-        height={height}
-        className={className}
       />
     );
-  },
+  }
 );
 
 function drawCard(
@@ -46,7 +46,7 @@ function drawCard(
   card: CardData,
   img: HTMLImageElement,
   w: number,
-  h: number,
+  h: number
 ) {
   // Clear
   ctx.clearRect(0, 0, w, h);
@@ -129,7 +129,7 @@ function wrapText(
   x: number,
   y: number,
   maxWidth: number,
-  lineHeight: number,
+  lineHeight: number
 ) {
   const chars = text.split("");
   let line = "";
