@@ -20,30 +20,29 @@ const InputSchema = z.object({
   imageBase64: z.string(), // data:image/jpeg;base64,... 形式を想定
 });
 
-export const generateCard = createServerFn({ method: "POST" })
-  .validator((data: unknown) => InputSchema.parse(data))
-  .handler(async ({ data }) => {
+export const generateCard = createServerFn({ method: "POST" }).handler(
+  async ({ data }: { data: unknown }) => {
+    const input = InputSchema.parse(data);
     const prompt = buildPrompt({
-      title: data.title,
-      description: data.description,
+      title: input.title,
+      description: input.description,
     });
 
     // Base64文字列からヘッダーを除去
-    const base64Data = data.imageBase64.split(",")[1] || data.imageBase64;
+    const base64Data = input.imageBase64.split(",")[1] || input.imageBase64;
 
     // Gemini API Call
-    // Cloudflare Workers環境では process.env が機能しない場合があるが、
-    // TanStack Start (Vinxi) がビルド時に置換してくれることを期待、あるいは
-    // getWebRequest() から env を取得する必要があるかもしれない。
-    // 一旦 process.env で実装し、デプロイ時に問題あれば修正する。
-    const apiKey = process.env.GEMINI_API_KEY;
+    // Cloudflare Workers bindings
+    // @ts-expect-error - cloudflare:workers types might not be fully resolved locally without generated types
+    const { env } = await import("cloudflare:workers");
+    const apiKey = env.GEMINI_API_KEY;
     if (!apiKey) {
       throw new Error("GEMINI_API_KEY is not set");
     }
 
     // Gemini 1.5 Pro (gemini-1.5-pro) を使用
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -85,4 +84,5 @@ export const generateCard = createServerFn({ method: "POST" })
       console.error("Failed to parse Gemini response:", text, e);
       throw new Error("Failed to parse card data");
     }
-  });
+  }
+);

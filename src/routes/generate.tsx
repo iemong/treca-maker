@@ -27,13 +27,15 @@ function GeneratePage() {
     if (f) {
       setFile(f);
       const reader = new FileReader();
-      reader.onload = (e) => setPreview(e.target?.result as string);
+      reader.onload = (event) => setPreview(event.target?.result as string);
       reader.readAsDataURL(f);
     }
   };
 
   const handleGenerate = async () => {
-    if (!(file && title)) return;
+    if (!(file && title)) {
+      return;
+    }
     setLoading(true);
     setCardData(null);
     try {
@@ -43,14 +45,17 @@ function GeneratePage() {
       setCardData(result);
     } catch (e) {
       console.error(e);
-      alert("生成に失敗しました。APIキーの設定などを確認してください。");
+      // TODO: Implement proper error feedback (e.g. Toast)
+      // alert("生成に失敗しました。APIキーの設定などを確認してください。");
     } finally {
       setLoading(false);
     }
   };
 
   const handleSave = async () => {
-    if (!(cardData && canvasRef.current)) return;
+    if (!(cardData && canvasRef.current)) {
+      return;
+    }
     const imageBase64 = canvasRef.current.toDataURL("image/png");
 
     try {
@@ -59,15 +64,17 @@ function GeneratePage() {
         imageBase64,
         createdAt: new Date(),
       });
-      alert("保存しました！");
+      // alert("保存しました！");
     } catch (e) {
       console.error(e);
-      alert("保存に失敗しました");
+      // alert("保存に失敗しました");
     }
   };
 
   const handleDownload = () => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current) {
+      return;
+    }
     const link = document.createElement("a");
     link.download = `${cardData?.name || "card"}.png`;
     link.href = canvasRef.current.toDataURL("image/png");
@@ -91,12 +98,14 @@ function GeneratePage() {
             />
           </div>
 
-          {preview && (
+          {!!preview && (
             <div className="relative aspect-video w-full overflow-hidden rounded-md border border-input">
               <img
                 alt="Preview"
                 className="h-full w-full object-cover"
-                src={preview}
+                height={360}
+                src={preview} // Placeholder for CLS
+                width={640} // Placeholder for CLS
               />
             </div>
           )}
