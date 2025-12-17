@@ -53,10 +53,8 @@ function CollectionPage() {
                   className="text-muted-foreground hover:text-destructive"
                   onClick={() => {
                     // biome-ignore lint/suspicious/noConfirm: User interaction required
-                    if (window.confirm("本当に削除しますか？")) {
-                      if (card.id) {
-                        db.cards.delete(card.id);
-                      }
+                    if (window.confirm("本当に削除しますか？") && card.id) {
+                      db.cards.delete(card.id);
                     }
                   }}
                   size="icon"
