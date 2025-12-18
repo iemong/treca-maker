@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Download, Loader2, Save } from "lucide-react";
 import { useRef, useState } from "react";
-import { CardView } from "@/components/CardView";
+import { CardView } from "@/components/card-view";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,7 +39,8 @@ function GeneratePage() {
     setLoading(true);
     setCardData(null);
     try {
-      const result = await generateCard({
+      // biome-ignore lint/suspicious/noExplicitAny: Workaround for TanStack Start typing issue
+      const result = await (generateCard as any)({
         data: { title, description, imageBase64: preview },
       });
       setCardData(result);
@@ -82,16 +83,17 @@ function GeneratePage() {
   };
 
   return (
-    <div className="container mx-auto max-w-4xl p-4">
+    <div className="container mx-auto max-w-4xl p-4 py-8">
       <h1 className="mb-8 text-center font-bold text-3xl">カード生成</h1>
 
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
         {/* Input Form */}
         <div className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="image">画像</Label>
             <Input
               accept="image/*"
+              className="cursor-pointer"
               id="image"
               onChange={handleFileChange}
               type="file"
@@ -99,13 +101,13 @@ function GeneratePage() {
           </div>
 
           {!!preview && (
-            <div className="relative aspect-video w-full overflow-hidden rounded-md border border-input">
+            <div className="relative aspect-video w-full overflow-hidden rounded-md border border-input bg-muted/30">
               <img
                 alt="Preview"
                 className="h-full w-full object-cover"
                 height={360}
-                src={preview} // Placeholder for CLS
-                width={640} // Placeholder for CLS
+                src={preview}
+                width={640}
               />
             </div>
           )}
@@ -123,6 +125,7 @@ function GeneratePage() {
           <div className="space-y-2">
             <Label htmlFor="description">画像の説明（任意）</Label>
             <Textarea
+              className="min-h-[100px]"
               id="description"
               onChange={(e) => setDescription(e.target.value)}
               placeholder="どんな状況？（例：ラーメンを食べている、猫が寝ている）"
@@ -131,14 +134,15 @@ function GeneratePage() {
           </div>
 
           <Button
-            className="w-full"
-            disabled={!(file && title) || loading}
+            className="w-full py-6 text-lg"
+            // biome-ignore lint/complexity/useSimplifiedLogicExpression: Avoid noLeakedRender conflict
+            disabled={!file || !title || loading}
             onClick={handleGenerate}
             size="lg"
           >
             {loading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 生成中...
               </>
             ) : (
@@ -148,18 +152,19 @@ function GeneratePage() {
         </div>
 
         {/* Result View */}
-        <div className="flex flex-col items-center justify-start space-y-4">
+        <div className="flex flex-col items-center justify-start space-y-6">
           {cardData ? (
             <>
-              <CardView
-                card={cardData}
-                className="rounded-lg shadow-2xl"
-                imageBase64={preview}
-                ref={canvasRef}
-              />
-              <div className="flex w-full space-x-4">
+              <div className="w-full max-w-[400px] overflow-hidden rounded-xl shadow-2xl transition-all duration-500">
+                <CardView
+                  card={cardData}
+                  imageBase64={preview}
+                  ref={canvasRef}
+                />
+              </div>
+              <div className="grid w-full grid-cols-2 gap-4">
                 <Button
-                  className="flex-1"
+                  className="w-full"
                   onClick={handleSave}
                   variant="secondary"
                 >
@@ -167,17 +172,17 @@ function GeneratePage() {
                   保存
                 </Button>
                 <Button
-                  className="flex-1"
+                  className="w-full"
                   onClick={handleDownload}
                   variant="outline"
                 >
                   <Download className="mr-2 h-4 w-4" />
-                  ダウンロード
+                  保存
                 </Button>
               </div>
             </>
           ) : (
-            <div className="flex h-[580px] w-full items-center justify-center rounded-lg border-2 border-dashed text-muted-foreground">
+            <div className="flex aspect-[400/580] w-full max-w-[400px] items-center justify-center rounded-xl border-2 border-dashed bg-muted/20 text-muted-foreground">
               ここにカードが生成されます
             </div>
           )}

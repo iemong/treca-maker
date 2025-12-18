@@ -1,13 +1,13 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import type { CardData } from "@/server/gemini";
 
-interface CardViewProps {
+type CardViewProps = {
   card: CardData;
   imageBase64: string; // data:image/... 形式
   width?: number;
   height?: number;
   className?: string;
-}
+};
 
 export const CardView = forwardRef<HTMLCanvasElement, CardViewProps>(
   ({ card, imageBase64, width = 400, height = 580, className }, ref) => {
@@ -18,9 +18,13 @@ export const CardView = forwardRef<HTMLCanvasElement, CardViewProps>(
 
     useEffect(() => {
       const canvas = canvasRef.current;
-      if (!canvas) return;
+      if (!canvas) {
+        return;
+      }
       const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+      if (!ctx) {
+        return;
+      }
 
       const img = new Image();
       img.crossOrigin = "anonymous";
@@ -32,7 +36,7 @@ export const CardView = forwardRef<HTMLCanvasElement, CardViewProps>(
 
     return (
       <canvas
-        className={className}
+        className={`h-auto max-w-full ${className || ""}`}
         height={height}
         ref={canvasRef}
         width={width}
@@ -41,6 +45,7 @@ export const CardView = forwardRef<HTMLCanvasElement, CardViewProps>(
   }
 );
 
+// biome-ignore lint/nursery/useMaxParams: Canvas drawing often requires many parameters
 function drawCard(
   ctx: CanvasRenderingContext2D,
   card: CardData,
@@ -50,7 +55,6 @@ function drawCard(
 ) {
   // --- Constants & Colors ---
   const PADDING = 18;
-  const BORDER_RADIUS = 10;
 
   const colors = {
     frameLight: "#D4B483", // Gold/Tan light
@@ -190,7 +194,10 @@ function drawCard(
   // Calculation
   const destAspect = imgW / imgH;
   const srcAspect = img.width / img.height;
-  let sW, sH, sX, sY;
+  let sW: number;
+  let sH: number;
+  let sX: number;
+  let sY: number;
 
   if (srcAspect > destAspect) {
     sH = img.height;
@@ -276,6 +283,7 @@ function drawCard(
 }
 
 // Helper for Rounded Rect
+// biome-ignore lint/nursery/useMaxParams: Helper function
 function drawRoundedRect(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -284,17 +292,23 @@ function drawRoundedRect(
   h: number,
   r: number
 ) {
-  if (w < 2 * r) r = w / 2;
-  if (h < 2 * r) r = h / 2;
+  let radius = r;
+  if (w < 2 * radius) {
+    radius = w / 2;
+  }
+  if (h < 2 * radius) {
+    radius = h / 2;
+  }
   ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r);
-  ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r);
-  ctx.arcTo(x, y, x + w, y, r);
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + w, y, x + w, y + h, radius);
+  ctx.arcTo(x + w, y + h, x, y + h, radius);
+  ctx.arcTo(x, y + h, x, y, radius);
+  ctx.arcTo(x, y, x + w, y, radius);
   ctx.closePath();
 }
 
+// biome-ignore lint/nursery/useMaxParams: Helper function
 function wrapText(
   ctx: CanvasRenderingContext2D,
   text: string,
@@ -305,17 +319,18 @@ function wrapText(
 ) {
   const chars = text.split("");
   let line = "";
+  let currentY = y;
   for (let n = 0; n < chars.length; n++) {
     const testLine = line + chars[n];
     const metrics = ctx.measureText(testLine);
     const testWidth = metrics.width;
     if (testWidth > maxWidth && n > 0) {
-      ctx.fillText(line, x, y);
+      ctx.fillText(line, x, currentY);
       line = chars[n];
-      y += lineHeight;
+      currentY += lineHeight;
     } else {
       line = testLine;
     }
   }
-  ctx.fillText(line, x, y);
+  ctx.fillText(line, x, currentY);
 }

@@ -21,7 +21,8 @@ const InputSchema = z.object({
 });
 
 export const generateCard = createServerFn({ method: "POST" }).handler(
-  async ({ data }: { data: unknown }) => {
+  // biome-ignore lint/suspicious/noExplicitAny: Input data needs to be parsed
+  async ({ data }: { data: any }) => {
     const input = InputSchema.parse(data);
     const prompt = buildPrompt({
       title: input.title,
