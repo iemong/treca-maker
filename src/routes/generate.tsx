@@ -13,6 +13,41 @@ export const Route = createFileRoute("/generate")({
   component: GeneratePage,
 });
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const TARGET_MAX_DIMENSION = 2048;
+
+function compressImage(dataUrl: string): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+
+      // 縦横比を維持しながらリサイズ
+      if (width > TARGET_MAX_DIMENSION || height > TARGET_MAX_DIMENSION) {
+        if (width > height) {
+          height = Math.round((height * TARGET_MAX_DIMENSION) / width);
+          width = TARGET_MAX_DIMENSION;
+        } else {
+          width = Math.round((width * TARGET_MAX_DIMENSION) / height);
+          height = TARGET_MAX_DIMENSION;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+      }
+
+      // JPEG 85%品質で圧縮
+      resolve(canvas.toDataURL("image/jpeg", 0.85));
+    };
+    img.src = dataUrl;
+  });
+}
+
 function GeneratePage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>("");
@@ -27,7 +62,15 @@ function GeneratePage() {
     if (f) {
       setFile(f);
       const reader = new FileReader();
-      reader.onload = (event) => setPreview(event.target?.result as string);
+      reader.onload = async (event) => {
+        const dataUrl = event.target?.result as string;
+        if (f.size > MAX_FILE_SIZE) {
+          const compressed = await compressImage(dataUrl);
+          setPreview(compressed);
+        } else {
+          setPreview(dataUrl);
+        }
+      };
       reader.readAsDataURL(f);
     }
   };
