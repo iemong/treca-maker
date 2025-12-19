@@ -239,30 +239,48 @@ function drawCard(
 
   // Type (Bold)
   ctx.fillStyle = "#000";
-  ctx.font = 'bold 16px "Hiragino Kaku Gothic ProN", sans-serif';
+  ctx.font = 'bold 12px "Hiragino Kaku Gothic ProN", sans-serif';
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
   ctx.fillText(`【${card.type}】`, descX + textInnerMargin - 4, cursorY);
 
-  cursorY += 24;
+  cursorY += 18;
 
   // Flavor Text (Main Body)
-  ctx.font = '14px "Hiragino Mincho ProN", serif';
+  // Dynamic font sizing to fit the box
+  const footerH = 25;
+  const lineY = descY + descH - footerH - 5;
+  const bottomPadding = 4;
+  const maxBodyHeight = lineY - cursorY - bottomPadding;
+
+  let fontSize = 14;
+  const minFontSize = 9;
+  let lines: string[] = [];
+  let lineHeight = 0;
+
   ctx.fillStyle = "#222";
-  // Simple wrapping
-  wrapText(
-    ctx,
-    card.flavorText,
-    descX + textInnerMargin,
-    cursorY,
-    textMaxW,
-    18
-  );
+
+  // Loop to find the largest font size that fits
+  while (fontSize >= minFontSize) {
+    ctx.font = `${fontSize}px "Hiragino Mincho ProN", serif`;
+    lineHeight = Math.floor(fontSize * 1.5);
+    lines = getWrappedLines(ctx, card.flavorText, textMaxW);
+    const totalHeight = lines.length * lineHeight;
+
+    if (totalHeight <= maxBodyHeight) {
+      break;
+    }
+    fontSize -= 1;
+  }
+
+  // Draw the text
+  ctx.font = `${fontSize}px "Hiragino Mincho ProN", serif`;
+  lines.forEach((line, i) => {
+    ctx.fillText(line, descX + textInnerMargin, cursorY + i * lineHeight);
+  });
 
   // --- 6. ATK / DEF Footer ---
   // Draw a separator line
-  const footerH = 25;
-  const lineY = descY + descH - footerH - 5;
 
   ctx.beginPath();
   ctx.moveTo(descX + 10, lineY);
@@ -308,29 +326,26 @@ function drawRoundedRect(
   ctx.closePath();
 }
 
-// biome-ignore lint/nursery/useMaxParams: Helper function
-function wrapText(
+function getWrappedLines(
   ctx: CanvasRenderingContext2D,
   text: string,
-  x: number,
-  y: number,
-  maxWidth: number,
-  lineHeight: number
-) {
+  maxWidth: number
+): string[] {
   const chars = text.split("");
+  const lines: string[] = [];
   let line = "";
-  let currentY = y;
+
   for (let n = 0; n < chars.length; n++) {
     const testLine = line + chars[n];
     const metrics = ctx.measureText(testLine);
     const testWidth = metrics.width;
     if (testWidth > maxWidth && n > 0) {
-      ctx.fillText(line, x, currentY);
+      lines.push(line);
       line = chars[n];
-      currentY += lineHeight;
     } else {
       line = testLine;
     }
   }
-  ctx.fillText(line, x, currentY);
+  lines.push(line);
+  return lines;
 }
