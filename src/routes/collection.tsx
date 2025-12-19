@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Trash2 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { db } from "@/lib/db";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { type Card, db } from "@/lib/db";
 
 export const Route = createFileRoute("/collection")({
   component: CollectionPage,
@@ -10,6 +12,7 @@ export const Route = createFileRoute("/collection")({
 
 function CollectionPage() {
   const cards = useLiveQuery(() => db.cards.toArray());
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
   if (!cards) {
     return <div className="p-8 text-center">Loading...</div>;
@@ -36,14 +39,18 @@ function CollectionPage() {
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {cards.map((card) => (
             <div className="group flex flex-col space-y-2" key={card.id}>
-              <div className="relative overflow-hidden rounded-lg shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl">
+              <button
+                className="relative overflow-hidden rounded-lg shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                onClick={() => setSelectedCard(card)}
+                type="button"
+              >
                 {/* biome-ignore lint/correctness/useImageSize: Dynamic user content */}
                 <img
                   alt={card.name}
                   className="h-auto w-full"
                   src={card.imageBase64}
                 />
-              </div>
+              </button>
 
               <div className="flex items-center justify-between px-1">
                 <span className="mr-1 flex-1 truncate font-medium text-sm">
@@ -67,6 +74,25 @@ function CollectionPage() {
           ))}
         </div>
       )}
+
+      <Dialog
+        onOpenChange={(open) => !open && setSelectedCard(null)}
+        open={selectedCard !== null}
+      >
+        <DialogContent className="max-w-md p-0">
+          <DialogTitle className="sr-only">
+            {selectedCard?.name ?? "カード詳細"}
+          </DialogTitle>
+          {selectedCard !== null && (
+            // biome-ignore lint/correctness/useImageSize: Dynamic user content
+            <img
+              alt={selectedCard.name}
+              className="h-auto w-full rounded-lg"
+              src={selectedCard.imageBase64}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

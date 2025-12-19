@@ -12,6 +12,7 @@ type CardViewProps = {
 export const CardView = forwardRef<HTMLCanvasElement, CardViewProps>(
   ({ card, imageBase64, width = 400, height = 580, className }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const scale = 2; // Retina対応用スケール
 
     // 外部からのrefを内部のcanvasRefに結合
     useImperativeHandle(ref, () => canvasRef.current as HTMLCanvasElement);
@@ -26,6 +27,9 @@ export const CardView = forwardRef<HTMLCanvasElement, CardViewProps>(
         return;
       }
 
+      // Retina対応: 2倍スケールで描画
+      ctx.setTransform(scale, 0, 0, scale, 0, 0);
+
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.src = imageBase64;
@@ -37,9 +41,10 @@ export const CardView = forwardRef<HTMLCanvasElement, CardViewProps>(
     return (
       <canvas
         className={`h-auto max-w-full ${className || ""}`}
-        height={height}
+        height={height * scale}
         ref={canvasRef}
-        width={width}
+        style={{ width, height }}
+        width={width * scale}
       />
     );
   }
