@@ -10,7 +10,7 @@ type CardViewProps = {
 };
 
 export const CardView = forwardRef<HTMLCanvasElement, CardViewProps>(
-  ({ card, imageBase64, width = 400, height = 580, className }, ref) => {
+  ({ card, imageBase64, width = 450, height = 600, className }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const scale = 2; // Retina対応用スケール
 
@@ -70,7 +70,7 @@ function drawCard(
     goldBorder: "#F9D676", // Highlight gold
   };
 
-  // --- 1. Main Frame (Stone/Gold Texture Effect) ---
+  // --- 1. Main Frame (Common) ---
   ctx.clearRect(0, 0, w, h);
 
   // Base Gradient
@@ -91,27 +91,137 @@ function drawCard(
   ctx.lineWidth = 2;
   ctx.strokeRect(PADDING, PADDING, w - PADDING * 2, h - PADDING * 2);
 
+  const isLandscape = w > h;
+
+  if (isLandscape) {
+    drawLandscapeLayout(ctx, card, img, w, h, colors, PADDING);
+  } else {
+    drawPortraitLayout(ctx, card, img, w, h, colors, PADDING);
+  }
+}
+
+// biome-ignore lint/nursery/useMaxParams: Canvas drawing
+function drawPortraitLayout(
+  ctx: CanvasRenderingContext2D,
+  card: CardData,
+  img: HTMLImageElement,
+  w: number,
+  h: number,
+  colors: any,
+  PADDING: number
+) {
   // --- 2. Header Area (Name & Attribute) ---
   const headerY = PADDING + 10;
   const headerH = 34;
   const attributeSize = 32;
 
   // Name Box
-  ctx.fillStyle = "#fff"; // White box for name (or parchment?) - using parchment for header mostly standard in some TCGs, but let's go with a specialized gradient or just styling.
-  // Actually, Yu-Gi-Oh uses a simple box frame.
-
-  // Name Box Background
   const titleBoxW = w - PADDING * 2 - attributeSize - 15;
-  const titleGrad = ctx.createLinearGradient(
-    PADDING + 5,
-    headerY,
-    PADDING + 5,
-    headerY + headerH
-  );
-  titleGrad.addColorStop(0, "#e6e6e6"); // Metallicish white
+  drawHeader(ctx, card, headerY, headerH, titleBoxW, PADDING);
+
+  // Attribute Circle
+  const attrX = w - PADDING - attributeSize - 5;
+  drawAttribute(ctx, card, attrX, headerY, attributeSize);
+
+  // --- 3. Level / Stars ---
+  const starY = headerY + headerH + 8;
+  const starSize = 18;
+  const rightEdge = w - PADDING - 15;
+  drawStars(ctx, card, starY, starSize, rightEdge);
+
+  // --- 4. Main Image ---
+  const imgY = starY + starSize + 8;
+  const imgW = w - PADDING * 2 - 24; // Slightly smaller than frame
+  const imgH = imgW; // Square image
+  const imgX = PADDING + 12;
+
+  drawImage(ctx, img, imgX, imgY, imgW, imgH);
+
+  // --- 5. Description Box ---
+  const descY = imgY + imgH + 12;
+  const descH = h - descY - PADDING - 15;
+  const descW = w - PADDING * 2 - 16;
+  const descX = PADDING + 8;
+
+  drawDescriptionBox(ctx, card, descX, descY, descW, descH, colors);
+}
+
+// biome-ignore lint/nursery/useMaxParams: Canvas drawing
+function drawLandscapeLayout(
+  ctx: CanvasRenderingContext2D,
+  card: CardData,
+  img: HTMLImageElement,
+  w: number,
+  h: number,
+  colors: any,
+  PADDING: number
+) {
+  // Left side: Image
+  // Right side: Header, Stars, Description
+
+  const innerW = w - PADDING * 2;
+  const innerH = h - PADDING * 2;
+
+  // Divide area
+  const imgAreaWidth = innerW * 0.45;
+  const textAreaWidth = innerW - imgAreaWidth; // roughly 55%
+
+  // --- Image ---
+  // Try to keep image relatively square or fit within left side
+  // Let's make it centered vertically in the inner area
+  const imgSize = Math.min(imgAreaWidth - 24, innerH - 24);
+  const imgX = PADDING + 12;
+  const imgY = PADDING + (innerH - imgSize) / 2;
+
+  drawImage(ctx, img, imgX, imgY, imgSize, imgSize);
+
+  // --- Right Side Content ---
+  const rightX = PADDING + imgAreaWidth; // Start of right area
+  const rightContentW = textAreaWidth - 12; // Margin on right
+  const startY = PADDING + 12;
+
+  // 1. Header
+  const headerH = 34;
+  const attributeSize = 32;
+  const titleBoxW = rightContentW - attributeSize - 10;
+
+  drawHeader(ctx, card, startY, headerH, titleBoxW, rightX - 8); // -8 to adjust for PADDING usage in helper
+
+  // Attribute
+  const attrX = rightX + titleBoxW + 5;
+  drawAttribute(ctx, card, attrX, startY, attributeSize);
+
+  // 2. Stars
+  const starY = startY + headerH + 8;
+  const starSize = 18;
+  const rightEdge = rightX + rightContentW;
+  drawStars(ctx, card, starY, starSize, rightEdge);
+
+  // 3. Description Box
+  const descY = starY + starSize + 12;
+  const descH = (PADDING + innerH) - descY - 12; // fill rest of height
+  const descW = rightContentW;
+  const descX = rightX;
+
+  drawDescriptionBox(ctx, card, descX, descY, descW, descH, colors);
+}
+
+
+// --- Helper Functions ---
+
+function drawHeader(
+  ctx: CanvasRenderingContext2D,
+  card: CardData,
+  y: number,
+  h: number,
+  w: number,
+  xOffset: number
+) {
+  const titleGrad = ctx.createLinearGradient(xOffset + 5, y, xOffset + 5, y + h);
+  titleGrad.addColorStop(0, "#e6e6e6");
   titleGrad.addColorStop(1, "#bdaea5");
 
-  drawRoundedRect(ctx, PADDING + 8, headerY, titleBoxW, headerH, 4);
+  drawRoundedRect(ctx, xOffset + 8, y, w, h, 4);
   ctx.fillStyle = titleGrad;
   ctx.fill();
   ctx.strokeStyle = "#000";
@@ -124,25 +234,18 @@ function drawCard(
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
   ctx.shadowColor = "rgba(0,0,0,0)";
-  ctx.fillText(
-    card.name,
-    PADDING + 16,
-    headerY + headerH / 2 + 1,
-    titleBoxW - 10
-  );
+  ctx.fillText(card.name, xOffset + 16, y + h / 2 + 1, w - 10);
+}
 
-  // Attribute Circle
-  const attrX = w - PADDING - attributeSize - 5;
-  const attrY = headerY;
-
+function drawAttribute(
+  ctx: CanvasRenderingContext2D,
+  card: CardData,
+  x: number,
+  y: number,
+  size: number
+) {
   ctx.beginPath();
-  ctx.arc(
-    attrX + attributeSize / 2,
-    attrY + attributeSize / 2,
-    attributeSize / 2,
-    0,
-    Math.PI * 2
-  );
+  ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
   ctx.fillStyle = "#4B0082"; // Indigo for "Dark" generic
   ctx.fill();
   ctx.strokeStyle = "#fff";
@@ -155,49 +258,48 @@ function drawCard(
   ctx.font = 'bold 16px "Hiragino Mincho ProN", serif';
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(
-    card.attribute.slice(0, 1),
-    attrX + attributeSize / 2,
-    attrY + attributeSize / 2 + 1
-  );
+  ctx.fillText(card.attribute.slice(0, 1), x + size / 2, y + size / 2 + 1);
+}
 
-  // --- 3. Level / Stars ---
-  const starY = headerY + headerH + 8;
-  const starSize = 18;
+function drawStars(
+  ctx: CanvasRenderingContext2D,
+  card: CardData,
+  y: number,
+  size: number,
+  rightEdge: number
+) {
   const starSpacing = 20;
-  const starCount = Math.min(Math.max(card.rarity, 1), 12); // Clamp 1-12
+  const starCount = Math.min(Math.max(card.rarity, 1), 12);
 
-  ctx.font = `${starSize}px sans-serif`;
-  ctx.fillStyle = "#F9D676"; // Gold star
-  ctx.shadowColor = "#D54E21"; // Reddish glow/shadow
+  ctx.font = `${size}px sans-serif`;
+  ctx.fillStyle = "#F9D676";
+  ctx.shadowColor = "#D54E21";
   ctx.shadowBlur = 4;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
   ctx.textAlign = "right";
   ctx.textBaseline = "top";
 
-  // Align stars to the right edge of the image area
-  const rightEdge = w - PADDING - 15;
-
   for (let i = 0; i < starCount; i++) {
     const sx = rightEdge - i * starSpacing;
-    ctx.fillText("★", sx, starY);
+    ctx.fillText("★", sx, y);
   }
-  ctx.shadowBlur = 0; // Reset shadow
+  ctx.shadowBlur = 0;
+}
 
-  // --- 4. Main Image ---
-  const imgY = starY + starSize + 8;
-  const imgW = w - PADDING * 2 - 24; // Slightly smaller than frame
-  const imgH = imgW; // Square image
-  const imgX = PADDING + 12;
-
+function drawImage(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  x: number,
+  y: number,
+  w: number,
+  h: number
+) {
   // Image Frame Border
-  ctx.fillStyle = "#888"; // Silver/Grey backing
-  ctx.fillRect(imgX - 4, imgY - 4, imgW + 8, imgH + 8);
+  ctx.fillStyle = "#888";
+  ctx.fillRect(x - 4, y - 4, w + 8, h + 8);
 
-  // Draw Image with Object Fit Cover
-  // Calculation
-  const destAspect = imgW / imgH;
+  const destAspect = w / h;
   const srcAspect = img.width / img.height;
   let sW: number;
   let sH: number;
@@ -216,45 +318,49 @@ function drawCard(
     sY = (img.height - sH) / 2;
   }
 
-  ctx.drawImage(img, sX, sY, sW, sH, imgX, imgY, imgW, imgH);
+  ctx.drawImage(img, sX, sY, sW, sH, x, y, w, h);
 
-  // Inner Shadow for Image (inset effect)
+  // Inner Shadow for Image
   ctx.strokeStyle = "rgba(0,0,0,0.5)";
   ctx.lineWidth = 2;
-  ctx.strokeRect(imgX, imgY, imgW, imgH);
+  ctx.strokeRect(x, y, w, h);
+}
 
-  // --- 5. Description Box ---
-  const descY = imgY + imgH + 12;
-  const descH = h - descY - PADDING - 15;
-  const descW = w - PADDING * 2 - 16;
-  const descX = PADDING + 8;
-
-  // Box Background (Parchment)
-  drawRoundedRect(ctx, descX, descY, descW, descH, 4);
+function drawDescriptionBox(
+  ctx: CanvasRenderingContext2D,
+  card: CardData,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  colors: any
+) {
+  // Box Background
+  drawRoundedRect(ctx, x, y, w, h, 4);
   ctx.fillStyle = colors.textBox;
   ctx.fill();
   ctx.strokeStyle = colors.textBorder;
   ctx.lineWidth = 3;
   ctx.stroke();
 
-  // Content inside Desc Box
+  // Content
   const textInnerMargin = 12;
-  let cursorY = descY + textInnerMargin;
-  const textMaxW = descW - textInnerMargin * 2;
+  let cursorY = y + textInnerMargin;
+  const textMaxW = w - textInnerMargin * 2;
 
-  // Type (Bold)
+  // Type
   ctx.fillStyle = "#000";
   ctx.font = 'bold 12px "Hiragino Kaku Gothic ProN", sans-serif';
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
-  ctx.fillText(`【${card.type}】`, descX + textInnerMargin - 4, cursorY);
+  ctx.shadowColor = "rgba(0,0,0,0)";
+  ctx.fillText(`【${card.type}】`, x + textInnerMargin - 4, cursorY);
 
   cursorY += 18;
 
-  // Flavor Text (Main Body)
-  // Dynamic font sizing to fit the box
+  // Flavor Text
   const footerH = 25;
-  const lineY = descY + descH - footerH - 5;
+  const lineY = y + h - footerH - 5;
   const bottomPadding = 4;
   const maxBodyHeight = lineY - cursorY - bottomPadding;
 
@@ -265,7 +371,6 @@ function drawCard(
 
   ctx.fillStyle = "#222";
 
-  // Loop to find the largest font size that fits
   while (fontSize >= minFontSize) {
     ctx.font = `${fontSize}px "Hiragino Mincho ProN", serif`;
     lineHeight = Math.floor(fontSize * 1.5);
@@ -278,18 +383,15 @@ function drawCard(
     fontSize -= 1;
   }
 
-  // Draw the text
   ctx.font = `${fontSize}px "Hiragino Mincho ProN", serif`;
   lines.forEach((line, i) => {
-    ctx.fillText(line, descX + textInnerMargin, cursorY + i * lineHeight);
+    ctx.fillText(line, x + textInnerMargin, cursorY + i * lineHeight);
   });
 
-  // --- 6. ATK / DEF Footer ---
-  // Draw a separator line
-
+  // Footer
   ctx.beginPath();
-  ctx.moveTo(descX + 10, lineY);
-  ctx.lineTo(descX + descW - 10, lineY);
+  ctx.moveTo(x + 10, lineY);
+  ctx.lineTo(x + w - 10, lineY);
   ctx.strokeStyle = "#000";
   ctx.lineWidth = 1;
   ctx.stroke();
@@ -300,7 +402,7 @@ function drawCard(
   ctx.fillStyle = "#000";
   ctx.fillText(
     `ATK/${card.attack}  DEF/${card.defense}`,
-    descX + descW - 10,
+    x + w - 10,
     lineY + 6
   );
 }
