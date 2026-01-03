@@ -5,8 +5,59 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/")({ component: App });
 
 function App() {
+  const cards = [
+    "/cards/pic_1.png",
+    "/cards/pic_2.png",
+    "/cards/pic_3.png",
+    "/cards/pic_4.png",
+    "/cards/pic_5.png",
+    "/cards/pic_6.png",
+    "/cards/pic_7.png",
+  ];
+
   return (
     <div className="relative flex min-h-[calc(100vh-64px)] flex-col items-center justify-center overflow-hidden bg-background p-4">
+      {/* Background with scrolling cards */}
+      <div className="absolute inset-0 z-0 select-none overflow-hidden opacity-20 brightness-50 contrast-125 grayscale dark:opacity-10">
+        <div className="flex w-[200%] animate-marquee">
+          {/* First set of cards */}
+          <div className="flex w-1/2 justify-around gap-4 px-2">
+            {cards.map((src, i) => (
+              <div
+                className="aspect-[2/3] h-full max-h-[80vh] w-auto flex-shrink-0 skew-y-6 transform overflow-hidden rounded-xl border border-white/10 object-cover shadow-2xl transition-transform duration-500 hover:skew-y-0"
+                key={`bg-card-1-${i}`}
+              >
+                <img
+                  alt=""
+                  className="h-full w-full object-cover"
+                  loading="eager"
+                  src={src}
+                />
+              </div>
+            ))}
+          </div>
+          {/* Duplicate set for seamless loop */}
+          <div className="flex w-1/2 justify-around gap-4 px-2">
+            {cards.map((src, i) => (
+              <div
+                className="aspect-[2/3] h-full max-h-[80vh] w-auto flex-shrink-0 skew-y-6 transform overflow-hidden rounded-xl border border-white/10 object-cover shadow-2xl transition-transform duration-500 hover:skew-y-0"
+                key={`bg-card-2-${i}`}
+              >
+                <img
+                  alt=""
+                  className="h-full w-full object-cover"
+                  loading="eager"
+                  src={src}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Overlay to ensure text readability */}
+      <div className="absolute inset-0 z-0 bg-background/60 backdrop-blur-[2px]" />
+
       <FireEffect />
 
       <div className="relative z-10 flex flex-col items-center justify-center text-center">

@@ -212,7 +212,7 @@ function GeneratePage() {
                   variant="secondary"
                 >
                   <Save className="mr-2 h-4 w-4" />
-                  保存
+                  コレクションに追加
                 </Button>
                 <Button
                   className="w-full"
@@ -220,7 +220,7 @@ function GeneratePage() {
                   variant="outline"
                 >
                   <Download className="mr-2 h-4 w-4" />
-                  保存
+                  画像を保存
                 </Button>
               </div>
             </>
