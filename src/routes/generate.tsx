@@ -198,7 +198,7 @@ function GeneratePage() {
         <div className="flex flex-col items-center justify-start space-y-6">
           {cardData ? (
             <>
-              <div className="w-full max-w-[400px] overflow-hidden rounded-xl shadow-2xl transition-all duration-500">
+              <div className="w-full max-w-[450px] overflow-hidden rounded-xl shadow-2xl transition-all duration-500">
                 <CardView
                   card={cardData}
                   imageBase64={preview}
@@ -225,7 +225,7 @@ function GeneratePage() {
               </div>
             </>
           ) : (
-            <div className="flex aspect-[400/580] w-full max-w-[400px] items-center justify-center rounded-xl border-2 border-dashed bg-muted/20 text-muted-foreground">
+            <div className="flex aspect-[3/4] w-full max-w-[450px] items-center justify-center rounded-xl border-2 border-dashed bg-muted/20 text-muted-foreground">
               ここにカードが生成されます
             </div>
           )}
